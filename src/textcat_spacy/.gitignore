@@ -1,0 +1,6 @@
+corpus
+packages
+training
+assets/train_rec.csv
+assets/test_rec.csv
+assets/categories.json

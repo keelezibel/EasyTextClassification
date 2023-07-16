@@ -1,0 +1,66 @@
+convert:
+  cmd: python -m spacy run convert
+  script:
+    - python scripts/convert.py en assets/train_rec.csv assets/categories.json corpus/train.spacy
+    - python scripts/convert.py en assets/test_rec.csv assets/categories.json corpus/dev.spacy
+  deps:
+    - path: assets/train_rec.csv
+      md5: 70ac42ffff0215390ccd161a6e9ccc71
+    - path: assets/test_rec.csv
+      md5: f0e185028ba7244d6b59965436bb27a5
+    - path: assets/categories.json
+      md5: 563028602b418bd6f8d0ba35df83a658
+    - path: scripts/convert.py
+      md5: 272dd13300da15bacecb1db3ed38d748
+  outs:
+    - path: corpus/train.spacy
+      md5: e4e555e5a8cd18613e1122620d4fc3a9
+    - path: corpus/dev.spacy
+      md5: 90c43e18c825eb20df455ccb3d74ca52
+  spacy_version: 3.6.0
+  spacy_git_version: 6fc153a26
+train:
+  cmd: python -m spacy run train
+  script:
+    - python -m spacy train configs/config.cfg --output training/ --paths.train corpus/train.spacy
+      --paths.dev corpus/dev.spacy --nlp.lang en --gpu-id 0
+  deps:
+    - path: configs/config.cfg
+      md5: 816ece56ef244200950716db95fb5ae8
+    - path: corpus/train.spacy
+      md5: e4e555e5a8cd18613e1122620d4fc3a9
+    - path: corpus/dev.spacy
+      md5: 90c43e18c825eb20df455ccb3d74ca52
+  outs:
+    - path: training/model-best
+      md5: 256d86419c57e49e4791ed76a38aa010
+  spacy_version: 3.6.0
+  spacy_git_version: 6fc153a26
+package:
+  cmd: python -m spacy run package
+  script:
+    - python -m spacy package training/model-best packages --name sentence_classifier
+      --version 1.0.0 --force
+  deps:
+    - path: training/model-best
+      md5: 256d86419c57e49e4791ed76a38aa010
+  outs:
+    - path: packages/en_sentence_classifier-1.0.0/dist/en_sentence_classifier-1.0.0.tar.gz
+      md5: 5c3921dd8d4a17f16056ef908c120a25
+  spacy_version: 3.6.0
+  spacy_git_version: 6fc153a26
+evaluate:
+  cmd: python -m spacy run evaluate
+  script:
+    - python -m spacy evaluate training/model-best corpus/dev.spacy --output training/metrics.json
+      --gpu-id 0
+  deps:
+    - path: corpus/dev.spacy
+      md5: 90c43e18c825eb20df455ccb3d74ca52
+    - path: training/model-best
+      md5: 31f438b3d81954a5d121e7130c57166f
+  outs:
+    - path: training/metrics.json
+      md5: b9b67069aaf56d8df1d072437e859425
+  spacy_version: 3.1.1
+  spacy_git_version: ffaead8fe

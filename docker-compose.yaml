@@ -1,0 +1,26 @@
+version: "3.7"
+
+services:
+  app:
+    image: keelezibel/spacy:1.0.0
+    volumes:
+      - ./models/nltk_data:/usr/lib/nltk_data
+      - ./models:/models
+      - ./data:/data
+      - ./src:/app/src
+      - .env:/app/.env
+      - ./requirements.txt:/app/requirements.txt
+    tty: true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+    ports:
+      - 8501:8501
+    environment:
+      - PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
+      - SENTENCE_TRANSFORMERS_HOME=/models
+    shm_size: '8gb'
